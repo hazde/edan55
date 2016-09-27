@@ -1,7 +1,7 @@
 import copy
 count = 0
 def main():
-    lines = open('data/g70.in').read()
+    lines = open('data/g60.in').read()
     lines = lines.splitlines()
     N = int(lines[0])
     G = dict()
@@ -25,28 +25,26 @@ def R_0(G):
     if not len(G): return 0
     node = find_empty(G)
     if node != -1:
-        g2 = copy.deepcopy(G)
-        l = g2[node]
+        l = G[node]
         for k in l:
-            g2[k].remove(node)
-        del g2[node]
-        return 1 + R_0(g2)
+            G[k].remove(node)
+        del G[node]
+        return 1 + R_0(G)
     else:
-        g3 = copy.deepcopy(G)
         g4 = copy.deepcopy(G)
         ind = max(G, key= lambda x: len(G[x]))
         l = G[ind]
-        del g3[ind]
+        del G[ind]
         for k in l:
-            del g3[k]
-        for k1 in g3:
+            del G[k]
+        for k1 in G:
             for k2 in l:
-                if k2 in g3[k1]: g3[k1].remove(k2)
+                if k2 in G[k1]: G[k1].remove(k2)
         for k3 in g4:
             if ind in g4[k3]: g4[k3].remove(ind)
 
         del g4[ind]
-        return max(1 + R_0(g3), R_0(g4))
+        return max(1 + R_0(G), R_0(g4))
 
 if __name__ == '__main__':
     main()
