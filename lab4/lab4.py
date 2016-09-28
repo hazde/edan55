@@ -1,6 +1,7 @@
 import sys
 import regex as re
 import random
+import math
 import numpy as np
 from collections import defaultdict
 
@@ -23,29 +24,46 @@ def main(args):
             e = int(t[1])
             G[v].append(e)
     print('Iterations: ' + str(iterations))
-    if args[0] == '-s':
-        a = 0.15
-        
-        A = np.zeros(shape=(V, V))
+    if args[0] == '-l':
+        a = 0.85
+        vals = list()
         for j in range(V):
             l = G[j]
+            cur = list()
             for i in range(V):
                 if i in l:
-                    A[i,j] = l.count(i)/len(l)
+                    cur.append(l.count(i)/len(l))
                 else:
-                    A[i,j] = 0
-
-        p = np.array([1,0,0,0])
-        B = np.full((V,V), a/V)
-
-        M = (1-a)*A + B
-
+                    cur.append(0)
+            vals.append(cur)
+        H = np.matrix(vals)
+        print(H)
+        val = list()
+        for i in range(V):
+            if len(G[i]):
+                val.append([0 for i in range(V)])
+            else:
+                val.append([1/V for i in range(V)])
+        D = np.matrix(val)
+        H = H + D
+        #p = np.full(V, 1/V)
+        p = np.zeros(shape=(V))
+        p[0] = 1
+        B = np.full((V,V), (1-a)/V)
+        M = a*H + B
+        
         Q = M**iterations
-        v1 = Q.dot(p)
+        v1 = p*Q
+        print('Q:')
         print(Q)
-        print(v1)
-    else:
+        print('Pagerank vector:')
+        print(np.sort(v1.A1)[-5:])
+        print(np.sum(v1))
+    elif args[0] == '-s':
         run(G, iterations)
+    else:
+        print('Unknown parameter ' + args[0])
+        sys.exit(0)
 
 def run(G, iterations):
     a = 85
