@@ -7,10 +7,10 @@ from collections import defaultdict
 
 def main(args):
     if len(args) < 3:
-        print('Usage: [-s | -l] filename [iterations | r]')
+        print('Usage: filename [-s | -l] [iterations | r]')
         sys.exit(0)
     G = defaultdict(list)
-    filename = args[1]
+    filename = args[0]
     iterations = int(args[2])
     lines = open(filename).read().splitlines()
     V = int(lines[0])
@@ -24,9 +24,19 @@ def main(args):
             e = int(t[1])
             G[v].append(e)
     print('Iterations: ' + str(iterations))
-    if args[0] == '-l':
+    if args[1] == '-l':
         a = 0.85
         vals = list()
+
+        
+        #H = np.zeros(shape=(V,V))
+        """
+        for k in G:
+            l = G[k]
+            for i in l:
+                H[k, i] = l.count(i)/len(l)
+        print(H)
+        
         for j in range(V):
             l = G[j]
             cur = list()
@@ -37,29 +47,44 @@ def main(args):
                     cur.append(0)
             vals.append(cur)
         H = np.matrix(vals)
-        print(H)
+        """
+        #print(H)
         val = list()
+        d_mul = 0
         for i in range(V):
             if len(G[i]):
                 val.append([0 for i in range(V)])
             else:
                 val.append([1/V for i in range(V)])
+                d_mul += 1
         D = np.matrix(val)
-        H = H + D
-        #p = np.full(V, 1/V)
+        #print(D)
+        h_mul = 0
+        for k in G:
+            l = G[k]
+            for i in l:
+                D[k, i] = l.count(i)/len(l)
+                h_mul +=1
+
         p = np.zeros(shape=(V))
         p[0] = 1
         B = np.full((V,V), (1-a)/V)
-        M = a*H + B
+        M = a*D + B
         
         Q = M**iterations
         v1 = p*Q
+        
+        tot_mul = (d_mul + h_mul) #* iterations
+        
+
         print('Q:')
         print(Q)
         print('Pagerank vector:')
         print(np.sort(v1.A1)[-5:])
         print(np.sum(v1))
-    elif args[0] == '-s':
+        print('Multiplications: ' + str(tot_mul))
+        
+    elif args[1] == '-s':
         run(G, iterations)
     else:
         print('Unknown parameter ' + args[0])
@@ -69,6 +94,12 @@ def run(G, iterations):
     a = 85
     cur_node = 0
     visits = defaultdict(int)
+    
+    
+    
+
+    print(itr)
+    """
     for i in range(iterations):
         r = random.randint(1,100)
         if r <= a:
@@ -79,7 +110,7 @@ def run(G, iterations):
         else:
             cur_node = random.randint(0, len(G)-1)
             visits[cur_node] += 1
-    
+    """
     N = sum(visits.values())
     print('Total visits: ' + str(N))
     for k in visits:
