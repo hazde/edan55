@@ -1,6 +1,7 @@
 import sys
 import regex as re
 import random
+import operator
 import math
 import numpy as np
 from collections import defaultdict
@@ -66,22 +67,31 @@ def main(args):
                 D[k, i] = l.count(i)/len(l)
                 h_mul +=1
 
-        p = np.zeros(shape=(V))
-        p[0] = 1
+        p = np.full((V), 1/V)
         B = np.full((V,V), (1-a)/V)
         M = a*D + B
+        print(p)
         
-        Q = M**iterations
-        v1 = p*Q
+        diff = 1.0
+        p_prev = p
+        itr = 0
+        while diff >= 0.01: 
+            p = (p*M)
+            diff_a = abs(p.A1 - p_prev)
+            p_prev = p.A1
+            diff = sum(diff_a)
+            print(diff)
+            itr += 1
+            
+        tot_mul = itr * V*V
         
-        tot_mul = (d_mul + h_mul) #* iterations
         
-
-        print('Q:')
-        print(Q)
+        
+        #print('Q:')
+        print(itr)
         print('Pagerank vector:')
-        print(np.sort(v1.A1)[-5:])
-        print(np.sum(v1))
+        print(np.sort(p.A1)[-5:])
+        print(np.sum(p.A1))
         print('Multiplications: ' + str(tot_mul))
         
     elif args[1] == '-s':
@@ -94,10 +104,28 @@ def run(G, iterations):
     a = 85
     cur_node = 0
     visits = defaultdict(int)
+    prev = defaultdict(int)
     
-    
-    
-
+    diff = 1.0
+    itr = 0
+    while diff >= 0.01:
+        r = random.randint(1,100)
+        if r <= a:
+            l = G[cur_node]
+            if len(l):
+                cur_node = random.choice(l)
+                visits[cur_node] += 1
+                if prev[cur_node] != 0:
+                    diff = abs((prev[cur_node] - visits[cur_node]) / prev[cur_node])
+                prev[cur_node] = visits[cur_node]
+        else:
+            cur_node = random.randint(0, len(G)-1)
+            visits[cur_node] += 1
+            if prev[cur_node] != 0:
+                    diff = abs((prev[cur_node] - visits[cur_node]) / prev[cur_node])
+            prev[cur_node] = visits[cur_node]
+        #print(diff)
+        itr += 1
     print(itr)
     """
     for i in range(iterations):
@@ -112,12 +140,14 @@ def run(G, iterations):
             visits[cur_node] += 1
     """
     N = sum(visits.values())
-    print('Total visits: ' + str(N))
+    #print('Total visits: ' + str(N))
     for k in visits:
         v = visits[k]
         freq = v / N
         print('Node ' + str(k) + ':\t\t' + str(v) + ' at relative frequency: ' + str(freq))
-
+    s = sorted(visits.items(), key=operator.itemgetter(1))
+    s = [(a[0], a[1] / N) for a in s]
+    print(s[-5:])
 if __name__ == '__main__':
     args = sys.argv[1:]
     main(args)
